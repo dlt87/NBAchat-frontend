@@ -128,13 +128,43 @@
         border-top: 1px solid #333;
       }
     }
+
+    body.light {
+      background-color: #f0f0f0;
+      color: #111;
+    }
+
+    body.light header,
+    body.light .chat-container,
+    body.light form {
+      background: #fff;
+      color: #111;
+      border-color: #ccc;
+    }
+
+    body.light #messages div {
+      background: #eee;
+    }
+
+    body.light input,
+    body.light button {
+      background: #fff;
+      color: #111;
+      border: 1px solid #ccc;
+    }
+
+    body.light button:hover {
+      background: #ddd;
+    }
+
   </style>
 </head>
 
 <body>
   <header>
-    NBA Live Stream + Chat
+    Oklahoma in 4 + Chat
     <button id="switchBtn">Switch Stream</button>
+    <button id="themeToggle" style="float: right; margin-right: 1rem;">Toggle Theme</button>
   </header>
 
   <div class="stream-container">
@@ -240,6 +270,18 @@
     btn.addEventListener("click", () => {
       stream1.classList.toggle("active");
       stream2.classList.toggle("active");
+    });
+
+    // Theme toggle logic
+    const themeToggle = document.getElementById("themeToggle");
+    const currentTheme = localStorage.getItem("theme") || "dark";
+
+    document.body.classList.toggle("light", currentTheme === "light");
+
+    themeToggle.addEventListener("click", () => {
+      document.body.classList.toggle("light");
+      const newTheme = document.body.classList.contains("light") ? "light" : "dark";
+      localStorage.setItem("theme", newTheme);
     });
   </script>
 
