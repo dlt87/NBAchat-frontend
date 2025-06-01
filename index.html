@@ -219,14 +219,19 @@
         border: none;
         border-radius: 4px;
         font-size: 1rem;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+      }
+
+      .chat-container {
+        transition: transform 0.3s ease;
       }
 
       .chat-hidden .chat-container {
-        display: none;
+        transform: translateY(100%);
       }
 
       .chat-visible .chat-container {
-        display: flex;
+        transform: translateY(0);
       }
     }
   </style>
@@ -440,7 +445,16 @@
         } else {
           // On desktop, always show chat
           document.body.classList.remove("chat-hidden", "chat-visible");
-          toggleChatBtn.style.display = "none";
+          if (window.innerWidth <= 768) {
+            toggleChatBtn.style.display = "block";
+            document.body.classList.toggle("chat-hidden", !chatVisible);
+            document.body.classList.toggle("chat-visible", chatVisible);
+            toggleChatBtn.textContent = chatVisible ? "Hide Chat" : "Show Chat";
+          } else {
+            document.body.classList.remove("chat-hidden", "chat-visible");
+            toggleChatBtn.style.display = "none";
+          }
+
         }
       }
 
