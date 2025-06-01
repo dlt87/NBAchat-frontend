@@ -241,7 +241,7 @@
 
   <script>
     document.addEventListener("DOMContentLoaded", () => {
-      lucide.createIcons(); // Render icons
+      lucide.createIcons();
 
       const themeToggle = document.getElementById("themeToggle");
       const themeIcon = document.getElementById("themeIcon");
@@ -280,7 +280,7 @@
       }
 
       function stringToColor(str) {
-        const brightColors = [
+        const colors = [
           "#ff6b6b", "#feca57", "#54a0ff", "#5f27cd", "#1dd1a1", "#ff9ff3",
           "#00d2d3", "#c56cf0", "#48dbfb", "#f368e0", "#10ac84", "#ffb142",
           "#ff793f", "#00cec9", "#6c5ce7", "#fd79a8"
@@ -289,31 +289,23 @@
         for (let i = 0; i < str.length; i++) {
           hash = str.charCodeAt(i) + ((hash << 5) - hash);
         }
-        const index = Math.abs(hash) % brightColors.length;
-        return brightColors[index];
-      }
-
-      function sanitizeTime(time) {
-        if (!time) return formatTime();
-        const date = new Date(`1970-01-01T${time}`);
-        if (isNaN(date)) return formatTime();
-        return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        return colors[Math.abs(hash) % colors.length];
       }
 
       function addMessage(msg) {
         const item = document.createElement("div");
-        const userColor = stringToColor(msg.user || "anonymous");
-        const timestamp = msg.time || '';
+        const color = stringToColor(msg.user || "anonymous");
+        const time = msg.time || formatTime();
         item.innerHTML = `
-        <span style="color: gray; font-size: 0.8em;">[${timestamp}]</span>
-        <strong style="color: ${userColor}">${msg.user}:</strong>
+        <span style="color: gray; font-size: 0.8em;">[${time}]</span>
+        <strong style="color: ${color}">${msg.user}:</strong>
         <span>${msg.text}</span>
       `;
         messages.appendChild(item);
         messages.scrollTop = messages.scrollHeight;
       }
 
-      form.addEventListener("submit", function (e) {
+      form.addEventListener("submit", (e) => {
         e.preventDefault();
         if (input.value.trim()) {
           socket.emit("chat message", {
@@ -324,28 +316,18 @@
         }
       });
 
-      socket.on("chat history", function (history) {
+      socket.on("chat history", (history) => {
         history.forEach(addMessage);
       });
 
-      socket.on("chat message", function (msg) {
+      socket.on("chat message", (msg) => {
         addMessage(msg);
       });
 
-      const btn = document.getElementById("switchBtn");
-      const stream1 = document.getElementById("stream1");
-      const stream2 = document.getElementById("stream2");
-
-      btn.addEventListener("click", () => {
-        stream1.classList.toggle("active");
-        stream2.classList.toggle("active");
-      });
-
-      // === LOGIN LOGIC MOVED HERE (socket must be defined first) ===
       const loginBtn = document.getElementById("loginBtn");
-      const loginText = document.getElementById("loginText");
 
-      socket.on('connect', () => {
+      // ✅ Check login AFTER socket is defined
+      socket.on("connect", () => {
         console.log("✅ Connected to socket, now checking login...");
 
         fetch("https://nbachat.onrender.com/auth/user", {
@@ -356,21 +338,16 @@
             if (data.user) {
               username = data.user.display_name;
 
-              // System join message
               socket.emit("chat message", {
                 user: "System",
                 text: `${username} has joined the chat`,
                 time: formatTime()
               });
 
-              // Notify backend
-              socket.emit("user joined", username);
-
-              // Show welcome
               document.getElementById('welcomeText').textContent = `Welcome, ${username}!`;
 
-              // Show avatar + logout
               loginBtn.innerHTML = "";
+
               const avatar = document.createElement('img');
               avatar.src = data.user.profile_image_url;
               avatar.alt = 'Twitch avatar';
@@ -398,11 +375,22 @@
           .catch(err => console.error("Login check failed:", err));
       });
 
-      socket.on('connect_error', (err) => {
+      socket.on("connect_error", (err) => {
         console.error("❌ Socket connection failed:", err.message);
+      });
+
+      // Stream toggle (optional)
+      const btn = document.getElementById("switchBtn");
+      const stream1 = document.getElementById("stream1");
+      const stream2 = document.getElementById("stream2");
+
+      btn.addEventListener("click", () => {
+        stream1.classList.toggle("active");
+        stream2.classList.toggle("active");
       });
     });
   </script>
+
 
 </body>
 
