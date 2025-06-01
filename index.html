@@ -314,7 +314,7 @@
     <!-- Stream Info -->
     <div class="stream-info">
       <h2>🏀 NBA Live: Pacers win the finals!</h2>
-      <p>Welcome to the live stream! Join the chat and enjoy the game.</p>
+      <p><strong>Viewers:</strong> <span id="viewerCount">0</span></p>
       <p><strong>Streaming on:</strong> dvdtea</p>
     </div>
   </div>
@@ -415,6 +415,13 @@
 
       socket.on("chat message", (msg) => {
         addMessage(msg);
+      });
+
+      socket.on('viewerCount', (count) => {
+        const viewerCountEl = document.getElementById('viewerCount');
+        if (viewerCountEl) {
+          viewerCountEl.textContent = count;
+        }
       });
 
       const loginBtn = document.getElementById("loginBtn");
