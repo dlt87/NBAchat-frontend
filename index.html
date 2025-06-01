@@ -165,31 +165,54 @@
     const input = document.getElementById("input");
     const messages = document.getElementById("messages");
 
+    function formatTime() {
+      const now = new Date();
+      return now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+
+    function stringToColor(str) {
+      let hash = 0;
+      for (let i = 0; i < str.length; i++) {
+        hash = str.charCodeAt(i) + ((hash << 5) - hash);
+      }
+      let color = "#";
+      for (let i = 0; i < 3; i++) {
+        const value = (hash >> (i * 8)) & 0xFF;
+        color += ("00" + value.toString(16)).substr(-2);
+      }
+      return color;
+    }
+
+    function addMessage(msg) {
+      const item = document.createElement("div");
+      const userColor = stringToColor(msg.user || "anonymous");
+      item.innerHTML = `
+        <span style="color: gray; font-size: 0.8em;">[${msg.time || formatTime()}]</span>
+        <strong style="color: ${userColor}">${msg.user}:</strong>
+        <span>${msg.text}</span>
+      `;
+      messages.appendChild(item);
+      messages.scrollTop = messages.scrollHeight;
+    }
+
     form.addEventListener("submit", function (e) {
       e.preventDefault();
       if (input.value.trim()) {
         socket.emit("chat message", {
           user: username,
-          text: input.value.trim()
+          text: input.value.trim(),
+          time: formatTime()
         });
         input.value = "";
       }
     });
 
     socket.on("chat history", function (history) {
-      history.forEach((msg) => {
-        const item = document.createElement("div");
-        item.innerHTML = `<strong>${msg.user}:</strong> ${msg.text}`;
-        messages.appendChild(item);
-      });
-      messages.scrollTop = messages.scrollHeight;
+      history.forEach(addMessage);
     });
 
     socket.on("chat message", function (msg) {
-      const item = document.createElement("div");
-      item.innerHTML = `<strong>${msg.user}:</strong> ${msg.text}`;
-      messages.appendChild(item);
-      messages.scrollTop = messages.scrollHeight;
+      addMessage(msg);
     });
 
     // Stream Switch Logic
@@ -202,6 +225,7 @@
       stream2.classList.toggle("active");
     });
   </script>
+
 </body>
 
 </html>
