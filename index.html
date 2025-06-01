@@ -276,6 +276,32 @@
       });
     });
   </script>
+    <!-- Your other scripts above, e.g., chat logic, etc. -->
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      lucide.createIcons(); // Render icons initially
+
+      const themeToggle = document.getElementById("themeToggle");
+      const themeIcon = document.getElementById("themeIcon");
+      const currentTheme = localStorage.getItem("theme") || "dark";
+
+      function setThemeIcon(theme) {
+        themeIcon.setAttribute("data-lucide", theme === "light" ? "moon" : "sun");
+        lucide.createIcons(); // Re-render icons
+      }
+
+      document.body.classList.toggle("light", currentTheme === "light");
+      setThemeIcon(currentTheme);
+
+      themeToggle.addEventListener("click", () => {
+        document.body.classList.toggle("light");
+        const newTheme = document.body.classList.contains("light") ? "light" : "dark";
+        localStorage.setItem("theme", newTheme);
+        setThemeIcon(newTheme);
+      });
+    });
+  </script>
 </body>
 
 </html>
