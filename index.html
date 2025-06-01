@@ -50,7 +50,7 @@
       opacity: 0.8;
     }
 
-    body.light .header-buttons button {
+    .header-buttons button {
       color: #111;
     }
 
@@ -151,6 +151,45 @@
         border-left: none;
         border-top: 1px solid #333;
       }
+    }
+
+    /* Light mode overrides */
+    body.light {
+      background-color: #fff;
+      color: #000;
+    }
+
+    body.light header {
+      background: #eee;
+      border-bottom: 1px solid #ccc;
+    }
+
+    body.light .chat-container {
+      background: #f5f5f5;
+      border-left: 1px solid #ccc;
+    }
+
+    body.light #messages div {
+      background: #e0e0e0;
+    }
+
+    body.light form {
+      background: #eee;
+    }
+
+    body.light input {
+      background: #fff;
+      color: #000;
+    }
+
+    body.light button {
+      background: #0a84ff;
+      color: white;
+    }
+
+    body.light #switchBtn {
+      background: #007bff;
+      color: white;
     }
   </style>
 </head>
