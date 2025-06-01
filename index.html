@@ -204,7 +204,6 @@
       cursor: pointer;
       border: none;
     }
-    
   </style>
 </head>
 
@@ -353,17 +352,43 @@
       .then(res => res.json())
       .then(data => {
         if (data.user) {
-          loginText.textContent = data.user.display_name || "Logout";
+          // Show chat and welcome message
+          document.getElementById('chatBox').style.display = 'block';
+          document.getElementById('welcomeText').textContent = `Welcome, ${data.user.display_name}!`;
+
+          // Set logout button with avatar
+          loginBtn.innerHTML = ''; // Clear existing content
+
+          const avatar = document.createElement('img');
+          avatar.src = data.user.profile_image_url;
+          avatar.alt = 'Twitch avatar';
+          avatar.style.height = '32px';
+          avatar.style.borderRadius = '50%';
+          avatar.style.verticalAlign = 'middle';
+          avatar.style.marginRight = '8px';
+
+          const nameSpan = document.createElement('span');
+          nameSpan.textContent = `Logout (${data.user.display_name})`;
+
+          loginBtn.appendChild(avatar);
+          loginBtn.appendChild(nameSpan);
+
           loginBtn.onclick = () => {
             window.location.href = "https://nbachat.onrender.com/auth/logout";
           };
         } else {
+          // Hide chat if not logged in
+          document.getElementById('chatBox').style.display = 'none';
+          document.getElementById('welcomeText').textContent = '';
+
+          loginBtn.textContent = "Login with Twitch";
           loginBtn.onclick = () => {
             window.location.href = "https://nbachat.onrender.com/auth/twitch";
           };
         }
       })
       .catch(err => console.error("Login check failed:", err));
+
 
   </script>
 </body>
