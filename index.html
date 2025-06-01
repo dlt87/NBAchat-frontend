@@ -208,6 +208,27 @@
       cursor: pointer;
       border: none;
     }
+
+    /*Mobile Accessibility Styling*/
+    @media (max-width: 768px) {
+      #toggleChat {
+        display: block;
+        padding: 0.6rem 1rem;
+        background: #0a84ff;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        font-size: 1rem;
+      }
+
+      .chat-hidden .chat-container {
+        display: none;
+      }
+
+      .chat-visible .chat-container {
+        display: flex;
+      }
+    }
   </style>
 </head>
 
@@ -241,6 +262,9 @@
       <button type="submit">Send</button>
     </form>
   </div>
+
+  <button id="toggleChat" style="position: fixed; bottom: 1rem; right: 1rem; z-index: 1000; display: none;">Show
+    Chat</button>
 
   <script>
     document.addEventListener("DOMContentLoaded", () => {
@@ -403,6 +427,33 @@
         stream1.classList.toggle("active");
         stream2.classList.toggle("active");
       });
+
+      // Mobile Chat Toggle
+      const toggleChatBtn = document.getElementById("toggleChat");
+      let chatVisible = true;
+
+      function updateChatToggle() {
+        if (window.innerWidth <= 768) {
+          document.body.classList.toggle("chat-hidden", !chatVisible);
+          document.body.classList.toggle("chat-visible", chatVisible);
+          toggleChatBtn.textContent = chatVisible ? "Hide Chat" : "Show Chat";
+        } else {
+          // On desktop, always show chat
+          document.body.classList.remove("chat-hidden", "chat-visible");
+          toggleChatBtn.style.display = "none";
+        }
+      }
+
+      toggleChatBtn.addEventListener("click", () => {
+        chatVisible = !chatVisible;
+        updateChatToggle();
+      });
+
+      window.addEventListener("resize", updateChatToggle);
+
+      // Initial check
+      updateChatToggle();
+
     });
   </script>
 
