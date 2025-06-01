@@ -232,14 +232,13 @@
   </div>
 
   <div id="welcomeText" style="margin: 1rem; font-weight: bold;"></div>
-  <div id="chatBox" style="display: none;">
-    <div class="chat-container">
-      <div id="messages"></div>
-      <form id="form">
-        <input id="input" autocomplete="off" placeholder="Type a message..." />
-        <button type="submit">Send</button>
-      </form>
-    </div>
+
+  <div class="chat-container">
+    <div id="messages"></div>
+    <form id="form">
+      <input id="input" autocomplete="off" placeholder="Type a message..." />
+      <button type="submit">Send</button>
+    </form>
   </div>
 
   <script>
@@ -266,9 +265,7 @@
       });
 
       let username = "";
-      while (!username) {
-        username = prompt("Enter your username:");
-      }
+
 
       const socket = io("https://nbachat.onrender.com");
 
@@ -355,8 +352,9 @@
       .then(res => res.json())
       .then(data => {
         if (data.user) {
+          username = data.user.display_name; // ✅ Set username from Twitch
+
           // Show chat and welcome message
-          document.getElementById('chatBox').style.display = 'block';
           document.getElementById('welcomeText').textContent = `Welcome, ${data.user.display_name}!`;
 
           // Set logout button with avatar
@@ -381,7 +379,6 @@
           };
         } else {
           // Hide chat if not logged in
-          document.getElementById('chatBox').style.display = 'none';
           document.getElementById('welcomeText').textContent = '';
 
           loginBtn.textContent = "Login with Twitch";
