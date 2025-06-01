@@ -298,6 +298,16 @@
           style="height: 20px; vertical-align: middle;">
       </button>
 
+      <div id="private-chat" style="display:none; border-left: 1px solid #ccc; padding: 10px; width: 250px;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <h3 id="private-chat-header" style="margin: 0;">💬 Whisper</h3>
+          <button id="close-private-chat"
+            style="border: none; background: none; font-size: 1.2em; cursor: pointer;">❌</button>
+        </div>
+        <div id="private-messages" style="max-height: 200px; overflow-y: auto; margin-top: 8px;"></div>
+        <input id="private-input" type="text" placeholder="Type a private message..."
+          style="width: 100%; margin-top: 6px;" />
+      </div>
     </div>
   </header>
 
@@ -341,6 +351,11 @@
 
   <script>
     let currentUser = null;
+
+    document.getElementById("close-private-chat").addEventListener("click", () => {
+      document.getElementById("private-chat").style.display = "none";
+      activeWhisperTarget = null;
+    });
 
     document.addEventListener("DOMContentLoaded", () => {
       lucide.createIcons();
