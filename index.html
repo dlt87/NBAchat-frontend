@@ -171,16 +171,33 @@
     }
 
     function stringToColor(str) {
+      const brightColors = [
+        "#ff6b6b", // bright red
+        "#feca57", // orange
+        "#54a0ff", // light blue
+        "#5f27cd", // bright purple
+        "#1dd1a1", // teal
+        "#ff9ff3", // pink
+        "#00d2d3", // aqua
+        "#c56cf0", // lavender
+        "#48dbfb", // sky blue
+        "#f368e0", // magenta
+        "#10ac84", // greenish-teal
+        "#ffb142", // bright gold
+        "#ff793f", // vivid orange
+        "#00cec9", // turquoise
+        "#6c5ce7", // violet
+        "#fd79a8"  // soft pink
+      ];
+
+      // Deterministic index based on username hash
       let hash = 0;
       for (let i = 0; i < str.length; i++) {
         hash = str.charCodeAt(i) + ((hash << 5) - hash);
       }
-      let color = "#";
-      for (let i = 0; i < 3; i++) {
-        const value = (hash >> (i * 8)) & 0xFF;
-        color += ("00" + value.toString(16)).substr(-2);
-      }
-      return color;
+
+      const index = Math.abs(hash) % brightColors.length;
+      return brightColors[index];
     }
 
     function addMessage(msg) {
