@@ -231,8 +231,6 @@
       allow="encrypted-media; picture-in-picture;"></iframe>
   </div>
 
-  <div id="welcomeText" style="margin: 1rem; font-weight: bold;"></div>
-
   <div class="chat-container">
     <div id="messages"></div>
     <form id="form">
@@ -352,14 +350,20 @@
       .then(res => res.json())
       .then(data => {
         if (data.user) {
-          username = data.user.display_name; // ✅ Set username from Twitch
+          username = data.user.display_name;
 
-          // Show chat and welcome message
-          document.getElementById('welcomeText').textContent = `Welcome, ${data.user.display_name}!`;
+          // Send system join message
+          socket.emit("chat message", {
+            user: "System",
+            text: `${username} has joined the chat`,
+            time: formatTime()
+          });
 
-          // Set logout button with avatar
-          loginBtn.innerHTML = ''; // Clear existing content
+          // Show welcome message
+          document.getElementById('welcomeText').textContent = `Welcome, ${username}!`;
 
+          // Update login button to show avatar and logout
+          loginBtn.innerHTML = "";
           const avatar = document.createElement('img');
           avatar.src = data.user.profile_image_url;
           avatar.alt = 'Twitch avatar';
@@ -369,7 +373,7 @@
           avatar.style.marginRight = '8px';
 
           const nameSpan = document.createElement('span');
-          nameSpan.textContent = `Logout (${data.user.display_name})`;
+          nameSpan.textContent = `Logout (${username})`;
 
           loginBtn.appendChild(avatar);
           loginBtn.appendChild(nameSpan);
@@ -378,9 +382,6 @@
             window.location.href = "https://nbachat.onrender.com/auth/logout";
           };
         } else {
-          // Hide chat if not logged in
-          document.getElementById('welcomeText').textContent = '';
-
           loginBtn.textContent = "Login with Twitch";
           loginBtn.onclick = () => {
             window.location.href = "https://nbachat.onrender.com/auth/twitch";
@@ -388,8 +389,6 @@
         }
       })
       .catch(err => console.error("Login check failed:", err));
-
-
   </script>
 </body>
 
