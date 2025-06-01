@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>NBA Chat</title>
   <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
   <style>
@@ -107,10 +108,7 @@
   <header>NBA Live Stream + Chat</header>
 
   <div class="stream-container">
-    <iframe
-      id="player"
-      src="https://vecloud.eu/stream/3982547b-d0b3-4163-a9ad-ff4f05a283bf"
-      allowfullscreen
+    <iframe id="player" src="https://vecloud.eu/stream/3982547b-d0b3-4163-a9ad-ff4f05a283bf" allowfullscreen
       allow="encrypted-media; picture-in-picture;">
     </iframe>
   </div>
@@ -138,6 +136,15 @@
       }
     });
 
+    socket.on("chat history", function (history) {
+      history.forEach((msg) => {
+        const item = document.createElement("div");
+        item.textContent = msg;
+        messages.appendChild(item);
+      });
+      messages.scrollTop = messages.scrollHeight;
+    });
+
     socket.on("chat message", function (msg) {
       const item = document.createElement("div");
       item.textContent = msg;
@@ -146,4 +153,5 @@
     });
   </script>
 </body>
+
 </html>
