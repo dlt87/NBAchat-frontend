@@ -151,7 +151,7 @@
     socket.on("chat history", function (history) {
       history.forEach((msg) => {
         const item = document.createElement("div");
-        item.textContent = msg;
+        item.innerHTML = `<strong>${msg.user}:</strong> ${msg.text}`;
         messages.appendChild(item);
       });
       messages.scrollTop = messages.scrollHeight;
