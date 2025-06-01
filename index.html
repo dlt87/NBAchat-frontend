@@ -343,19 +343,21 @@
                 time: formatTime()
               });
 
-              document.getElementById('welcomeText').textContent = `Welcome, ${username}!`;
+              socket.emit("user joined", username);
 
+              welcomeText.textContent = `Welcome, ${username}!`;
+
+              // Show avatar + logout button
               loginBtn.innerHTML = "";
-
-              const avatar = document.createElement('img');
+              const avatar = document.createElement("img");
               avatar.src = data.user.profile_image_url;
-              avatar.alt = 'Twitch avatar';
-              avatar.style.height = '32px';
-              avatar.style.borderRadius = '50%';
-              avatar.style.verticalAlign = 'middle';
-              avatar.style.marginRight = '8px';
+              avatar.alt = "Twitch avatar";
+              avatar.style.height = "32px";
+              avatar.style.borderRadius = "50%";
+              avatar.style.verticalAlign = "middle";
+              avatar.style.marginRight = "8px";
 
-              const nameSpan = document.createElement('span');
+              const nameSpan = document.createElement("span");
               nameSpan.textContent = `Logout (${username})`;
 
               loginBtn.appendChild(avatar);
@@ -364,7 +366,21 @@
               loginBtn.onclick = () => {
                 window.location.href = "https://nbachat.onrender.com/auth/logout";
               };
+
             } else {
+              // 👤 Generate guest username
+              username = "User" + Math.floor(1000 + Math.random() * 9000);
+
+              socket.emit("chat message", {
+                user: "System",
+                text: `${username} has joined the chat`,
+                time: formatTime()
+              });
+
+              socket.emit("user joined", username);
+
+              welcomeText.textContent = `Welcome, ${username}!`;
+
               loginBtn.textContent = "Login with Twitch";
               loginBtn.onclick = () => {
                 window.location.href = "https://nbachat.onrender.com/auth/twitch";
