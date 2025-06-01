@@ -391,14 +391,21 @@
         const item = document.createElement("div");
         const color = stringToColor(msg.user || "anonymous");
         const time = msg.time || formatTime();
+
+        const avatar = msg.avatar
+          ? `<img src="${msg.avatar}" alt="avatar" style="width: 24px; height: 24px; border-radius: 50%; vertical-align: middle; margin-right: 8px;">`
+          : "";
+
         item.innerHTML = `
-        <span style="color: gray; font-size: 0.8em;">[${time}]</span>
-        <strong style="color: ${color}">${msg.user}:</strong>
-        <span>${msg.text}</span>
-      `;
+    <span style="color: gray; font-size: 0.8em;">[${time}]</span>
+    ${avatar}
+    <strong style="color: ${color}">${msg.user}:</strong>
+    <span>${msg.text}</span>
+  `;
         messages.appendChild(item);
         messages.scrollTop = messages.scrollHeight;
       }
+
 
       form.addEventListener("submit", (e) => {
         e.preventDefault();
@@ -408,14 +415,15 @@
 
         // 🚨 Check if user is logged in
         if (!currentUser) {
-          alert("Please log in with Twitch to chat.");
-          return;
+          alert("Please log in with Twitch to chat you W Re.");
         }
 
         socket.emit("chat message", {
-          user: currentUser.display_name, // or whatever field you want to show
+          user: currentUser.display_name,
+          avatar: currentUser.profile_image_url, // ✅ Add avatar
           text: message
         });
+
 
         input.value = "";
       });
@@ -448,6 +456,7 @@
           .then(res => res.json())
           .then(data => {
             if (data.user) {
+              currentUser = data.user;
               username = data.user.display_name;
 
               socket.emit("chat message", {
