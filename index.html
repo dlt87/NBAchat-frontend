@@ -273,11 +273,19 @@
         return brightColors[index];
       }
 
+      function sanitizeTime(time) {
+        if (!time) return formatTime();
+        const date = new Date(`1970-01-01T${time}`);
+        if (isNaN(date)) return formatTime();
+        return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      }
+
       function addMessage(msg) {
         const item = document.createElement("div");
         const userColor = stringToColor(msg.user || "anonymous");
+        const timestamp = msg.time || ''; // should always be set by server now
         item.innerHTML = `
-          <span style="color: gray; font-size: 0.8em;">[${msg.time || formatTime()}]</span>
+          <span style="color: gray; font-size: 0.8em;">[${timestamp}]</span>
           <strong style="color: ${userColor}">${msg.user}:</strong>
           <span>${msg.text}</span>
         `;
@@ -290,8 +298,7 @@
         if (input.value.trim()) {
           socket.emit("chat message", {
             user: username,
-            text: input.value.trim(),
-            time: formatTime()
+            text: input.value.trim()
           });
           input.value = "";
         }
