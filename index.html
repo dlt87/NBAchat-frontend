@@ -73,7 +73,7 @@
 
     .stream-container {
       position: relative;
-      height: 100%;
+      height: 60vh;
       background: #000;
     }
 
@@ -232,6 +232,10 @@
 
       .chat-visible .chat-container {
         transform: translateY(0);
+      }
+
+      #toggleChat {
+        z-index: 9999;
       }
     }
   </style>
@@ -439,34 +443,26 @@
 
       function updateChatToggle() {
         if (window.innerWidth <= 768) {
+          toggleChatBtn.style.display = "block";
           document.body.classList.toggle("chat-hidden", !chatVisible);
           document.body.classList.toggle("chat-visible", chatVisible);
           toggleChatBtn.textContent = chatVisible ? "Hide Chat" : "Show Chat";
         } else {
-          // On desktop, always show chat
           document.body.classList.remove("chat-hidden", "chat-visible");
-          if (window.innerWidth <= 768) {
-            toggleChatBtn.style.display = "block";
-            document.body.classList.toggle("chat-hidden", !chatVisible);
-            document.body.classList.toggle("chat-visible", chatVisible);
-            toggleChatBtn.textContent = chatVisible ? "Hide Chat" : "Show Chat";
-          } else {
-            document.body.classList.remove("chat-hidden", "chat-visible");
-            toggleChatBtn.style.display = "none";
-          }
-
+          toggleChatBtn.style.display = "none";
         }
       }
+    }
 
       toggleChatBtn.addEventListener("click", () => {
-        chatVisible = !chatVisible;
-        updateChatToggle();
-      });
-
-      window.addEventListener("resize", updateChatToggle);
-
-      // Initial check
+      chatVisible = !chatVisible;
       updateChatToggle();
+    });
+
+    window.addEventListener("resize", updateChatToggle);
+
+    // Initial check
+    updateChatToggle();
 
     });
   </script>
