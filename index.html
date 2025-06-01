@@ -125,6 +125,12 @@
   </div>
 
   <script>
+    let username = "";
+
+    while (!username) {
+      username = prompt("Enter your username:");
+    }
+
     const socket = io("https://nbachat.onrender.com");
 
     const form = document.getElementById("form");
@@ -134,7 +140,10 @@
     form.addEventListener("submit", function (e) {
       e.preventDefault();
       if (input.value.trim()) {
-        socket.emit("chat message", input.value.trim());
+        socket.emit("chat message", {
+          user: username,
+          text: input.value.trim()
+        });
         input.value = "";
       }
     });
@@ -150,7 +159,7 @@
 
     socket.on("chat message", function (msg) {
       const item = document.createElement("div");
-      item.textContent = msg;
+      item.innerHTML = `<strong>${msg.user}:</strong> ${msg.text}`;
       messages.appendChild(item);
       messages.scrollTop = messages.scrollHeight;
     });
