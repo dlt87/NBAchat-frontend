@@ -7,28 +7,6 @@
   <title>NBA Chat</title>
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-  <script>
-    lucide.createIcons(); // Render icons initially
-
-    const themeToggle = document.getElementById("themeToggle");
-    const themeIcon = document.getElementById("themeIcon");
-    const currentTheme = localStorage.getItem("theme") || "dark";
-
-    function setThemeIcon(theme) {
-      themeIcon.setAttribute("data-lucide", theme === "light" ? "moon" : "sun");
-      lucide.createIcons();
-    }
-
-    document.body.classList.toggle("light", currentTheme === "light");
-    setThemeIcon(currentTheme);
-
-    themeToggle.addEventListener("click", () => {
-      document.body.classList.toggle("light");
-      const newTheme = document.body.classList.contains("light") ? "light" : "dark";
-      localStorage.setItem("theme", newTheme);
-      setThemeIcon(newTheme);
-    });
-  </script>
 
   <style>
     body {
@@ -77,9 +55,6 @@
     }
 
     #switchBtn {
-      position: absolute;
-      right: 1rem;
-      top: 1rem;
       padding: 0.5rem 1rem;
       background: #0a84ff;
       border: none;
@@ -179,25 +154,18 @@
 
 <body>
   <header>
-<<<<<<< HEAD
     <span>NBA Live Stream + Chat</span>
     <div class="header-buttons">
-      <button id="switchBtn" title="Switch Stream">
-        🔁
-      </button>
+      <button id="switchBtn" title="Switch Stream">🔁</button>
       <button id="themeToggle" title="Toggle Theme">
         <i data-lucide="sun" id="themeIcon"></i>
       </button>
     </div>
-=======
-    NBA Live Stream + Chat
-    <button id="switchBtn">Switch Stream</button>
->>>>>>> parent of 7621bd6 (dark and light mode)
   </header>
 
   <div class="stream-container">
-    <iframe id="stream1" class="active" src="https://vecloud.eu/stream/3982547b-d0b3-4163-a9ad-ff4f05a283bf" allowfullscreen
-      allow="encrypted-media; picture-in-picture;"></iframe>
+    <iframe id="stream1" class="active" src="https://vecloud.eu/stream/3982547b-d0b3-4163-a9ad-ff4f05a283bf"
+      allowfullscreen allow="encrypted-media; picture-in-picture;"></iframe>
     <iframe id="stream2" src="https://player.twitch.tv/?channel=dvdtea&parent=dlt87.github.io" allowfullscreen
       allow="encrypted-media; picture-in-picture;"></iframe>
   </div>
@@ -211,96 +179,100 @@
   </div>
 
   <script>
-    let username = "";
+    document.addEventListener("DOMContentLoaded", () => {
+      lucide.createIcons(); // Render icons
 
-    while (!username) {
-      username = prompt("Enter your username:");
-    }
+      const themeToggle = document.getElementById("themeToggle");
+      const themeIcon = document.getElementById("themeIcon");
+      const currentTheme = localStorage.getItem("theme") || "dark";
 
-    const socket = io("https://nbachat.onrender.com");
-
-    const form = document.getElementById("form");
-    const input = document.getElementById("input");
-    const messages = document.getElementById("messages");
-
-    function formatTime() {
-      const now = new Date();
-      return now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    }
-
-    function stringToColor(str) {
-      const brightColors = [
-        "#ff6b6b", // bright red
-        "#feca57", // orange
-        "#54a0ff", // light blue
-        "#5f27cd", // bright purple
-        "#1dd1a1", // teal
-        "#ff9ff3", // pink
-        "#00d2d3", // aqua
-        "#c56cf0", // lavender
-        "#48dbfb", // sky blue
-        "#f368e0", // magenta
-        "#10ac84", // greenish-teal
-        "#ffb142", // bright gold
-        "#ff793f", // vivid orange
-        "#00cec9", // turquoise
-        "#6c5ce7", // violet
-        "#fd79a8"  // soft pink
-      ];
-
-      // Deterministic index based on username hash
-      let hash = 0;
-      for (let i = 0; i < str.length; i++) {
-        hash = str.charCodeAt(i) + ((hash << 5) - hash);
+      function setThemeIcon(theme) {
+        themeIcon.setAttribute("data-lucide", theme === "light" ? "moon" : "sun");
+        lucide.createIcons();
       }
 
-      const index = Math.abs(hash) % brightColors.length;
-      return brightColors[index];
-    }
+      document.body.classList.toggle("light", currentTheme === "light");
+      setThemeIcon(currentTheme);
 
-    function addMessage(msg) {
-      const item = document.createElement("div");
-      const userColor = stringToColor(msg.user || "anonymous");
-      item.innerHTML = `
-        <span style="color: gray; font-size: 0.8em;">[${msg.time || formatTime()}]</span>
-        <strong style="color: ${userColor}">${msg.user}:</strong>
-        <span>${msg.text}</span>
-      `;
-      messages.appendChild(item);
-      messages.scrollTop = messages.scrollHeight;
-    }
+      themeToggle.addEventListener("click", () => {
+        document.body.classList.toggle("light");
+        const newTheme = document.body.classList.contains("light") ? "light" : "dark";
+        localStorage.setItem("theme", newTheme);
+        setThemeIcon(newTheme);
+      });
 
-    form.addEventListener("submit", function (e) {
-      e.preventDefault();
-      if (input.value.trim()) {
-        socket.emit("chat message", {
-          user: username,
-          text: input.value.trim(),
-          time: formatTime()
-        });
-        input.value = "";
+      let username = "";
+      while (!username) {
+        username = prompt("Enter your username:");
       }
-    });
 
-    socket.on("chat history", function (history) {
-      history.forEach(addMessage);
-    });
+      const socket = io("https://nbachat.onrender.com");
 
-    socket.on("chat message", function (msg) {
-      addMessage(msg);
-    });
+      const form = document.getElementById("form");
+      const input = document.getElementById("input");
+      const messages = document.getElementById("messages");
 
-    // Stream Switch Logic
-    const btn = document.getElementById("switchBtn");
-    const stream1 = document.getElementById("stream1");
-    const stream2 = document.getElementById("stream2");
+      function formatTime() {
+        const now = new Date();
+        return now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      }
 
-    btn.addEventListener("click", () => {
-      stream1.classList.toggle("active");
-      stream2.classList.toggle("active");
+      function stringToColor(str) {
+        const brightColors = [
+          "#ff6b6b", "#feca57", "#54a0ff", "#5f27cd", "#1dd1a1", "#ff9ff3",
+          "#00d2d3", "#c56cf0", "#48dbfb", "#f368e0", "#10ac84", "#ffb142",
+          "#ff793f", "#00cec9", "#6c5ce7", "#fd79a8"
+        ];
+        let hash = 0;
+        for (let i = 0; i < str.length; i++) {
+          hash = str.charCodeAt(i) + ((hash << 5) - hash);
+        }
+        const index = Math.abs(hash) % brightColors.length;
+        return brightColors[index];
+      }
+
+      function addMessage(msg) {
+        const item = document.createElement("div");
+        const userColor = stringToColor(msg.user || "anonymous");
+        item.innerHTML = `
+          <span style="color: gray; font-size: 0.8em;">[${msg.time || formatTime()}]</span>
+          <strong style="color: ${userColor}">${msg.user}:</strong>
+          <span>${msg.text}</span>
+        `;
+        messages.appendChild(item);
+        messages.scrollTop = messages.scrollHeight;
+      }
+
+      form.addEventListener("submit", function (e) {
+        e.preventDefault();
+        if (input.value.trim()) {
+          socket.emit("chat message", {
+            user: username,
+            text: input.value.trim(),
+            time: formatTime()
+          });
+          input.value = "";
+        }
+      });
+
+      socket.on("chat history", function (history) {
+        history.forEach(addMessage);
+      });
+
+      socket.on("chat message", function (msg) {
+        addMessage(msg);
+      });
+
+      const btn = document.getElementById("switchBtn");
+      const stream1 = document.getElementById("stream1");
+      const stream2 = document.getElementById("stream2");
+
+      btn.addEventListener("click", () => {
+        stream1.classList.toggle("active");
+        stream2.classList.toggle("active");
+      });
     });
   </script>
-
 </body>
 
 </html>
