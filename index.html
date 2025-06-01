@@ -5,7 +5,31 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>NBA Chat</title>
+  <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+  <script>
+    lucide.createIcons(); // Render icons initially
+
+    const themeToggle = document.getElementById("themeToggle");
+    const themeIcon = document.getElementById("themeIcon");
+    const currentTheme = localStorage.getItem("theme") || "dark";
+
+    function setThemeIcon(theme) {
+      themeIcon.setAttribute("data-lucide", theme === "light" ? "moon" : "sun");
+      lucide.createIcons();
+    }
+
+    document.body.classList.toggle("light", currentTheme === "light");
+    setThemeIcon(currentTheme);
+
+    themeToggle.addEventListener("click", () => {
+      document.body.classList.toggle("light");
+      const newTheme = document.body.classList.contains("light") ? "light" : "dark";
+      localStorage.setItem("theme", newTheme);
+      setThemeIcon(newTheme);
+    });
+  </script>
+
   <style>
     body {
       margin: 0;
@@ -23,11 +47,33 @@
       grid-column: 1 / -1;
       padding: 1rem;
       background: #222;
-      text-align: center;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
       font-size: 1.5rem;
       font-weight: bold;
       border-bottom: 1px solid #333;
-      position: relative;
+    }
+
+    .header-buttons {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .header-buttons button {
+      background: transparent;
+      border: none;
+      color: white;
+      cursor: pointer;
+      font-size: 1.2rem;
+    }
+
+    .header-buttons button:hover {
+      opacity: 0.8;
+    }
+
+    body.light .header-buttons button {
+      color: #111;
     }
 
     #switchBtn {
@@ -162,9 +208,15 @@
 
 <body>
   <header>
-    Oklahoma in 4 + Chat
-    <button id="switchBtn">Switch Stream</button>
-    <button id="themeToggle" style="float: right; margin-right: 1rem;">Toggle Theme</button>
+    <span>NBA Live Stream + Chat</span>
+    <div class="header-buttons">
+      <button id="switchBtn" title="Switch Stream">
+        🔁
+      </button>
+      <button id="themeToggle" title="Toggle Theme">
+        <i data-lucide="sun" id="themeIcon"></i>
+      </button>
+    </div>
   </header>
 
   <div class="stream-container">
