@@ -231,12 +231,15 @@
       allow="encrypted-media; picture-in-picture;"></iframe>
   </div>
 
-  <div class="chat-container">
-    <div id="messages"></div>
-    <form id="form">
-      <input id="input" autocomplete="off" placeholder="Type a message..." />
-      <button type="submit">Send</button>
-    </form>
+  <div id="welcomeText" style="margin: 1rem; font-weight: bold;"></div>
+  <div id="chatBox" style="display: none;">
+    <div class="chat-container">
+      <div id="messages"></div>
+      <form id="form">
+        <input id="input" autocomplete="off" placeholder="Type a message..." />
+        <button type="submit">Send</button>
+      </form>
+    </div>
   </div>
 
   <script>
