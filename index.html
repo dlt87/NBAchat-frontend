@@ -361,6 +361,7 @@
 
           // Show welcome message
           document.getElementById('welcomeText').textContent = `Welcome, ${username}!`;
+          socket.emit("user joined", data.user.display_name);
 
           // Update login button to show avatar and logout
           loginBtn.innerHTML = "";
