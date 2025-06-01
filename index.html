@@ -265,7 +265,9 @@
       let username = "";
 
 
-      const socket = io("https://nbachat.onrender.com");
+      const socket = io("https://nbachat.onrender.com", {
+        withCredentials: true
+      });
 
       const form = document.getElementById("form");
       const input = document.getElementById("input");
@@ -344,52 +346,58 @@
     const loginText = document.getElementById("loginText");
 
     // Check if user is logged in
-    fetch("https://nbachat.onrender.com/auth/user", {
-      credentials: "include"
-    })
-      .then(res => res.json())
-      .then(data => {
-        if (data.user) {
-          username = data.user.display_name;
+    socket.on('connect', () => {
+      console.log("Connected to socket, now checking login...");
 
-          // Send system join message
-          socket.emit("chat message", {
-            user: "System",
-            text: `${username} has joined the chat`,
-            time: formatTime()
-          });
-
-          // Show welcome message
-          document.getElementById('welcomeText').textContent = `Welcome, ${username}!`;
-          socket.emit("user joined", data.user.display_name);
-
-          // Update login button to show avatar and logout
-          loginBtn.innerHTML = "";
-          const avatar = document.createElement('img');
-          avatar.src = data.user.profile_image_url;
-          avatar.alt = 'Twitch avatar';
-          avatar.style.height = '32px';
-          avatar.style.borderRadius = '50%';
-          avatar.style.verticalAlign = 'middle';
-          avatar.style.marginRight = '8px';
-
-          const nameSpan = document.createElement('span');
-          nameSpan.textContent = `Logout (${username})`;
-
-          loginBtn.appendChild(avatar);
-          loginBtn.appendChild(nameSpan);
-
-          loginBtn.onclick = () => {
-            window.location.href = "https://nbachat.onrender.com/auth/logout";
-          };
-        } else {
-          loginBtn.textContent = "Login with Twitch";
-          loginBtn.onclick = () => {
-            window.location.href = "https://nbachat.onrender.com/auth/twitch";
-          };
-        }
+      fetch("https://nbachat.onrender.com/auth/user", {
+        credentials: "include"
       })
-      .catch(err => console.error("Login check failed:", err));
+        .then(res => res.json())
+        .then(data => {
+          if (data.user) {
+            username = data.user.display_name;
+
+            // Send system join message
+            socket.emit("chat message", {
+              user: "System",
+              text: `${username} has joined the chat`,
+              time: formatTime()
+            });
+
+            // Notify backend
+            socket.emit("user joined", username);
+
+            // Show welcome
+            document.getElementById('welcomeText').textContent = `Welcome, ${username}!`;
+
+            // Show avatar + logout
+            loginBtn.innerHTML = "";
+            const avatar = document.createElement('img');
+            avatar.src = data.user.profile_image_url;
+            avatar.alt = 'Twitch avatar';
+            avatar.style.height = '32px';
+            avatar.style.borderRadius = '50%';
+            avatar.style.verticalAlign = 'middle';
+            avatar.style.marginRight = '8px';
+
+            const nameSpan = document.createElement('span');
+            nameSpan.textContent = `Logout (${username})`;
+
+            loginBtn.appendChild(avatar);
+            loginBtn.appendChild(nameSpan);
+
+            loginBtn.onclick = () => {
+              window.location.href = "https://nbachat.onrender.com/auth/logout";
+            };
+          } else {
+            loginBtn.textContent = "Login with Twitch";
+            loginBtn.onclick = () => {
+              window.location.href = "https://nbachat.onrender.com/auth/twitch";
+            };
+          }
+        })
+        .catch(err => console.error("Login check failed:", err));
+    });
   </script>
 </body>
 
