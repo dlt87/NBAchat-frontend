@@ -275,25 +275,29 @@
         stream2.classList.toggle("active");
       });
     });
-  </script>
-    <!-- Your other scripts above, e.g., chat logic, etc. -->
 
-  <script>
     document.addEventListener("DOMContentLoaded", () => {
-      lucide.createIcons(); // Render icons initially
-
       const themeToggle = document.getElementById("themeToggle");
       const themeIcon = document.getElementById("themeIcon");
+
+      // Safety check
+      if (!themeToggle || !themeIcon) {
+        console.warn("Theme toggle or icon not found in the DOM.");
+        return;
+      }
+
       const currentTheme = localStorage.getItem("theme") || "dark";
 
       function setThemeIcon(theme) {
         themeIcon.setAttribute("data-lucide", theme === "light" ? "moon" : "sun");
-        lucide.createIcons(); // Re-render icons
+        lucide.createIcons(); // Force lucide to re-render icons
       }
 
+      // Apply current theme and icon
       document.body.classList.toggle("light", currentTheme === "light");
       setThemeIcon(currentTheme);
 
+      // Toggle on click
       themeToggle.addEventListener("click", () => {
         document.body.classList.toggle("light");
         const newTheme = document.body.classList.contains("light") ? "light" : "dark";
@@ -301,7 +305,6 @@
         setThemeIcon(newTheme);
       });
     });
-  </script>
 </body>
 
 </html>
