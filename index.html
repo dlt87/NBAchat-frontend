@@ -452,18 +452,16 @@
           toggleChatBtn.style.display = "none";
         }
       }
-    }
 
       toggleChatBtn.addEventListener("click", () => {
-      chatVisible = !chatVisible;
+        chatVisible = !chatVisible;
+        updateChatToggle();
+      });
+
+      window.addEventListener("resize", updateChatToggle);
+
+      // Initial check
       updateChatToggle();
-    });
-
-    window.addEventListener("resize", updateChatToggle);
-
-    // Initial check
-    updateChatToggle();
-
     });
   </script>
 
