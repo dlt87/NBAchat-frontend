@@ -320,6 +320,13 @@
   </div>
 
   <!-- Chat! -->
+  <div id="privateChat"
+    style="display:none; position:fixed; right:0; top:0; height:100%; width:300px; background:#222; border-left:1px solid #444; color:white; padding:1rem; overflow-y:auto;">
+    <h3 id="chatWith"></h3>
+    <div id="privateMessages" style="height:70%; overflow-y:auto; margin-bottom:1rem;"></div>
+    <input id="privateInput" placeholder="Type a private message..." style="width:100%; padding:0.5rem;" />
+  </div>
+
   <div class="chat-container">
     <div id="messages"></div>
     <form id="form">
@@ -396,16 +403,30 @@
           ? `<img src="${msg.avatar}" alt="avatar" style="width: 24px; height: 24px; border-radius: 50%; vertical-align: middle; margin-right: 8px;">`
           : "";
 
+        const usernameEl = document.createElement("strong");
+        usernameEl.textContent = `${msg.user}:`;
+        usernameEl.style.color = color;
+        usernameEl.style.cursor = "pointer";
+        usernameEl.style.marginRight = "5px";
+
+        if (msg.user !== currentUser.display_name) {
+          usernameEl.onclick = () => openPrivateChat(msg.user);
+        }
+
         item.innerHTML = `
     <span style="color: gray; font-size: 0.8em;">[${time}]</span>
     ${avatar}
-    <strong style="color: ${color}">${msg.user}:</strong>
-    <span>${msg.text}</span>
   `;
+
+        item.appendChild(usernameEl);
+
+        const textSpan = document.createElement("span");
+        textSpan.textContent = msg.text;
+        item.appendChild(textSpan);
+
         messages.appendChild(item);
         messages.scrollTop = messages.scrollHeight;
       }
-
 
       form.addEventListener("submit", (e) => {
         e.preventDefault();
@@ -413,10 +434,10 @@
         const message = input.value.trim();
         if (!message) return;
 
-        // 🚨 Check if user is logged in
-        if (!currentUser) {
-          alert("Please log in with Twitch to chat you W Re.");
-        }
+        // // 🚨 Check if user is logged in
+        // if (!currentUser) {
+        //   alert("Please log in with Twitch to chat you W Re.");
+        // }
 
         socket.emit("chat message", {
           user: currentUser.display_name,
@@ -424,10 +445,46 @@
           text: message
         });
 
-
         input.value = "";
       });
 
+      // Private chatting functionality
+
+      let chattingWith = "";
+
+      function openPrivateChat(username) {
+        chattingWith = username;
+        document.getElementById("chatWith").textContent = `Chatting with ${username}`;
+        document.getElementById("privateChat").style.display = "block";
+        document.getElementById("privateMessages").innerHTML = "";
+      }
+
+      document.getElementById("privateInput").addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          const message = e.target.value.trim();
+          if (!message || !chattingWith) return;
+
+          socket.emit("private message", {
+            to: chattingWith,
+            from: currentUser.display_name,
+            message
+          });
+
+          const item = document.createElement("div");
+          item.innerHTML = `<strong style="color:lime;">Me:</strong> ${message}`;
+          document.getElementById("privateMessages").appendChild(item);
+          e.target.value = "";
+        }
+      });
+
+      socket.on("private message", ({ from, message }) => {
+        openPrivateChat(from);
+        const item = document.createElement("div");
+        item.innerHTML = `<strong style="color:orange;">${from}:</strong> ${message}`;
+        document.getElementById("privateMessages").appendChild(item);
+      });
+
+      // Chat history and view count stuff
 
       socket.on("chat history", (history) => {
         history.forEach(addMessage);
