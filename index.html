@@ -264,10 +264,11 @@
 
       let username = "";
 
-
       const socket = io("https://nbachat.onrender.com", {
         withCredentials: true
       });
+
+      console.log("🔌 Socket initialized, waiting for connection...");
 
       const form = document.getElementById("form");
       const input = document.getElementById("input");
@@ -397,6 +398,11 @@
           }
         })
         .catch(err => console.error("Login check failed:", err));
+    });
+
+    // Initialize socket connection
+    socket.on('connect_error', (err) => {
+      console.error("❌ Socket connection failed:", err.message);
     });
   </script>
 </body>
