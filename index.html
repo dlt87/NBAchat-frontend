@@ -94,10 +94,10 @@
     }
 
     .chat-container {
+      grid-column: 2;
       display: flex;
       flex-direction: column;
       height: 100%;
-      max-height: 100vh;
       background: #1e1e1e;
       border-left: 1px solid #333;
       overflow: hidden;
@@ -153,10 +153,18 @@
         grid-template-rows: auto auto 1fr auto;
       }
 
+      .main-content,
       .chat-container {
-        border-left: none;
-        border-top: 1px solid #333;
+        grid-column: 1;
       }
+    }
+
+    /* Wrapper for stream and info */
+    .main-content {
+      display: flex;
+      flex-direction: column;
+      grid-column: 1;
+      overflow: hidden;
     }
 
     /* Light mode overrides */
@@ -293,19 +301,22 @@
     </div>
   </header>
 
-  <!-- Stream Iframes -->
-  <div class="stream-container">
-    <iframe id="stream1" class="active" src="https://vecloud.eu/stream/3982547b-d0b3-4163-a9ad-ff4f05a283bf"
-      allowfullscreen allow="encrypted-media; picture-in-picture;"></iframe>
-    <iframe id="stream2" src="https://player.twitch.tv/?channel=dvdtea&parent=dlt87.github.io" allowfullscreen
-      allow="encrypted-media; picture-in-picture;"></iframe>
-  </div>
 
-  <!-- Stream Info -->
-  <div class="stream-info">
-    <h2>🏀 NBA Live: Pacers win the finals!</h2>
-    <p>Welcome to the live stream! Join the chat and enjoy the game.</p>
-    <p><strong>Streaming on:</strong> dvdtea</p>
+  <div class="main-content">
+    <!-- Stream Iframes -->
+    <div class="stream-container">
+      <iframe id="stream1" class="active" src="https://vecloud.eu/stream/3982547b-d0b3-4163-a9ad-ff4f05a283bf"
+        allowfullscreen allow="encrypted-media; picture-in-picture;"></iframe>
+      <iframe id="stream2" src="https://player.twitch.tv/?channel=dvdtea&parent=dlt87.github.io" allowfullscreen
+        allow="encrypted-media; picture-in-picture;"></iframe>
+    </div>
+
+    <!-- Stream Info -->
+    <div class="stream-info">
+      <h2>🏀 NBA Live: Pacers win the finals!</h2>
+      <p>Welcome to the live stream! Join the chat and enjoy the game.</p>
+      <p><strong>Streaming on:</strong> dvdtea</p>
+    </div>
   </div>
 
   <!-- Chat! -->
