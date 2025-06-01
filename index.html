@@ -191,6 +191,20 @@
       background: #007bff;
       color: white;
     }
+
+    /*Twitch Auth Styling*/
+    #loginBtn {
+      background: #6441a5;
+      color: white;
+      border-radius: 4px;
+      padding: 0.4rem 0.6rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      cursor: pointer;
+      border: none;
+    }
+    
   </style>
 </head>
 
@@ -202,6 +216,12 @@
       <button id="themeToggle" title="Toggle Theme">
         <i data-lucide="sun" id="themeIcon"></i>
       </button>
+      <button id="loginBtn" title="Login with Twitch">
+        <img src="https://static.twitchcdn.net/assets/favicon-32-e29e246c157142c94346.png" alt="Twitch"
+          style="height: 20px; vertical-align: middle;">
+        <span id="loginText">Login</span>
+      </button>
+
     </div>
   </header>
 
@@ -321,6 +341,31 @@
         stream2.classList.toggle("active");
       });
     });
+
+    // Handle login button
+    const loginBtn = document.getElementById("loginBtn");
+    const loginText = document.getElementById("loginText");
+
+    // Check if user is logged in
+    fetch("https://nbachat.onrender.com/auth/user", {
+      credentials: "include"
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.user) {
+          loginText.textContent = data.user.display_name || "Logout";
+          loginBtn.onclick = () => {
+            window.location.href = "https://nbachat.onrender.com/auth/logout";
+          };
+        } else {
+          loginBtn.onclick = () => {
+            window.location.href = "https://nbachat.onrender.com/auth/twitch";
+          };
+        }
+      })
+      .catch(err => console.error("Login check failed:", err));
+
   </script>
 </body>
+
 </html>
