@@ -424,7 +424,7 @@
         usernameEl.style.cursor = "pointer";
         usernameEl.style.marginRight = "5px";
 
-        if (msg.user !== currentUser.display_name) {
+        if (currentUser && msg.user !== currentUser.display_name) {
           usernameEl.onclick = () => openPrivateChat(msg.user);
         }
 
@@ -449,14 +449,9 @@
         const message = input.value.trim();
         if (!message) return;
 
-        // // 🚨 Check if user is logged in
-        // if (!currentUser) {
-        //   alert("Please log in with Twitch to chat you W Re.");
-        // }
-
         socket.emit("chat message", {
-          user: currentUser.display_name,
-          avatar: currentUser.profile_image_url, // ✅ Add avatar
+          user: username, // ✅ use fallback
+          avatar: currentUser ? currentUser.profile_image_url : "https://ui-avatars.com/api/?name=" + encodeURIComponent(username),
           text: message
         });
 
