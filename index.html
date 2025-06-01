@@ -345,8 +345,6 @@
 
               socket.emit("user joined", username);
 
-              welcomeText.textContent = `Welcome, ${username}!`;
-
               // Show avatar + logout button
               loginBtn.innerHTML = "";
               const avatar = document.createElement("img");
@@ -378,8 +376,6 @@
               });
 
               socket.emit("user joined", username);
-
-              welcomeText.textContent = `Welcome, ${username}!`;
 
               loginBtn.textContent = "Login with Twitch";
               loginBtn.onclick = () => {
