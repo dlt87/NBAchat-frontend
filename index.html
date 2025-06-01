@@ -333,6 +333,8 @@
     Chat</button>
 
   <script>
+    let currentUser = null;
+
     document.addEventListener("DOMContentLoaded", () => {
       lucide.createIcons();
 
@@ -400,14 +402,24 @@
 
       form.addEventListener("submit", (e) => {
         e.preventDefault();
-        if (input.value.trim()) {
-          socket.emit("chat message", {
-            user: username,
-            text: input.value.trim()
-          });
-          input.value = "";
+
+        const message = input.value.trim();
+        if (!message) return;
+
+        // 🚨 Check if user is logged in
+        if (!currentUser) {
+          alert("Please log in with Twitch to chat.");
+          return;
         }
+
+        socket.emit("chat message", {
+          user: currentUser.display_name, // or whatever field you want to show
+          text: message
+        });
+
+        input.value = "";
       });
+
 
       socket.on("chat history", (history) => {
         history.forEach(addMessage);
