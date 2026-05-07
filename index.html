@@ -7,468 +7,611 @@
   <title>NBA Chat</title>
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 
   <style>
+    *, *::before, *::after { box-sizing: border-box; }
+
+    :root {
+      --bg:           #0a0a0b;
+      --surface:      #111113;
+      --surface-2:    #18181b;
+      --surface-3:    #222226;
+      --border:       rgba(255,255,255,0.07);
+      --border-soft:  rgba(255,255,255,0.04);
+      --text:         #e4e4e7;
+      --text-muted:   #71717a;
+      --text-dim:     #3f3f46;
+      --accent:       #3b82f6;
+      --accent-hover: #2563eb;
+      --twitch:       #9146ff;
+      --red:          #ef4444;
+    }
+
     body {
       margin: 0;
-      font-family: Arial, sans-serif;
-      background-color: #111;
-      color: #fff;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
       display: grid;
-      grid-template-columns: 1fr auto;
-      grid-template-rows: auto 1fr auto;
+      grid-template-columns: 1fr 320px;
+      grid-template-rows: 52px 1fr;
       height: 100vh;
       overflow: hidden;
     }
 
+    /* ── Header ──────────────────────────────────── */
     header {
       grid-column: 1 / -1;
-      padding: 1rem;
-      background: #222;
+      height: 52px;
+      padding: 0 1rem;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
       display: flex;
-      justify-content: space-between;
       align-items: center;
-      font-size: 1.5rem;
-      font-weight: bold;
-      border-bottom: 1px solid #333;
+      justify-content: space-between;
+      gap: 1rem;
     }
 
-    .header-buttons {
+    .header-brand {
       display: flex;
+      align-items: center;
       gap: 0.5rem;
+      font-size: 0.875rem;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      color: var(--text);
+      user-select: none;
     }
 
-    .header-buttons button {
-      background: transparent;
+    .live-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--red);
+      box-shadow: 0 0 8px rgba(239,68,68,0.7);
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.375rem;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.375rem 0.75rem;
       border: none;
-      color: white;
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: 0.8125rem;
+      font-weight: 500;
       cursor: pointer;
-      font-size: 1.2rem;
+      transition: opacity 0.15s, background 0.15s;
+      white-space: nowrap;
+      line-height: 1;
     }
 
-    .header-buttons button:hover {
-      opacity: 0.8;
+    .btn:hover { opacity: 0.8; }
+
+    .btn-ghost {
+      background: var(--surface-3);
+      color: var(--text);
+      border: 1px solid var(--border);
     }
 
-    .header-buttons button {
-      color: #111;
+    .btn-icon {
+      padding: 0;
+      width: 30px;
+      height: 30px;
+      justify-content: center;
+      background: var(--surface-3);
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+      border-radius: 6px;
     }
 
-    #switchBtn {
-      padding: 0.5rem 1rem;
-      background: #0a84ff;
-      border: none;
+    .btn-twitch {
+      background: var(--twitch);
       color: #fff;
-      border-radius: 4px;
-      cursor: pointer;
+      border: none;
     }
 
-    #themeToggle {
-      background: #0a84ff;
-    }
-
-    #switchBtn:hover {
-      background: #006fd6;
+    /* ── Main content (stream side) ──────────────── */
+    .main-content {
+      grid-column: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background: #000;
+      min-width: 0;
     }
 
     .stream-container {
       position: relative;
-      width: 100;
-      padding-top: 56.25%;
-      /* 16:9 aspect ratio */
+      flex: 1;
+      min-height: 0;
       background: #000;
     }
 
     .stream-container iframe {
       position: absolute;
-      top: 0;
-      left: 0;
+      inset: 0;
       width: 100%;
       height: 100%;
       border: none;
       display: none;
     }
 
-    .stream-container iframe.active {
-      display: block;
+    .stream-container iframe.active { display: block; }
+
+    .stream-info {
+      flex-shrink: 0;
+      height: 40px;
+      padding: 0 1rem;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 1rem;
     }
 
-    .chat-container {
+    .stream-title {
+      font-size: 0.8125rem;
+      font-weight: 500;
+      color: var(--text);
+      flex: 1;
+      min-width: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .viewer-badge {
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      flex-shrink: 0;
+    }
+
+    .viewer-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--red);
+    }
+
+    /* ── Chat panel ──────────────────────────────── */
+    .chat-panel {
       grid-column: 2;
       display: flex;
       flex-direction: column;
-      height: 100%;
-      background: #1e1e1e;
-      border-left: 1px solid #333;
+      background: var(--surface);
+      border-left: 1px solid var(--border);
       overflow: hidden;
+      position: relative;
+      min-width: 200px;
+    }
+
+    .chat-header {
+      flex-shrink: 0;
+      height: 40px;
+      padding: 0 1rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .chat-header-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--text-muted);
     }
 
     #messages {
       flex: 1;
       min-height: 0;
-      padding: 1rem;
       overflow-y: auto;
-      border-bottom: 1px solid #444;
       display: flex;
       flex-direction: column;
+      padding: 0.5rem 0;
     }
 
-    #messages div {
-      margin-bottom: 0.5rem;
-      background: #333;
-      padding: 0.5rem;
-      border-radius: 4px;
+    #messages::-webkit-scrollbar { width: 3px; }
+    #messages::-webkit-scrollbar-track { background: transparent; }
+    #messages::-webkit-scrollbar-thumb {
+      background: var(--surface-3);
+      border-radius: 2px;
     }
 
-    form {
+    .message {
+      padding: 0.2rem 1rem;
       display: flex;
-      padding: 1rem;
-      background: #222;
+      align-items: baseline;
+      gap: 0.35rem;
+      font-size: 0.8125rem;
+      line-height: 1.55;
     }
 
-    input {
-      flex: 1;
-      padding: 0.5rem;
-      border: none;
-      border-radius: 4px;
-      margin-right: 0.5rem;
+    .message:hover { background: rgba(255,255,255,0.025); }
+
+    .msg-time {
+      font-size: 0.6875rem;
+      color: var(--text-dim);
+      flex-shrink: 0;
+      font-variant-numeric: tabular-nums;
     }
 
-    button {
-      padding: 0.5rem 1rem;
-      border: none;
-      background: #0a84ff;
-      color: white;
-      border-radius: 4px;
+    .msg-avatar {
+      width: 15px;
+      height: 15px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      object-fit: cover;
+      align-self: center;
+    }
+
+    .msg-user {
+      font-weight: 600;
+      font-size: 0.8125rem;
+      flex-shrink: 0;
       cursor: pointer;
     }
 
-    button:hover {
-      background: #006fd6;
+    .msg-user:hover { opacity: 0.75; }
+
+    .msg-text {
+      color: var(--text);
+      word-break: break-word;
+      min-width: 0;
     }
+
+    .message.system .msg-user { color: var(--text-muted) !important; font-weight: 500; }
+    .message.system .msg-text { color: var(--text-muted); }
+
+    /* ── Chat input ──────────────────────────────── */
+    .chat-input-wrap {
+      flex-shrink: 0;
+      padding: 0.625rem 0.75rem;
+      border-top: 1px solid var(--border);
+      background: var(--surface);
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+
+    #input {
+      flex: 1;
+      background: var(--surface-3);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.4375rem 0.625rem;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.8125rem;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    #input:focus { border-color: rgba(255,255,255,0.14); }
+    #input::placeholder { color: var(--text-muted); }
+
+    #sendBtn {
+      padding: 0.4375rem 0.75rem;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: 0.8125rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.15s;
+      white-space: nowrap;
+    }
+
+    #sendBtn:hover { background: var(--accent-hover); }
+
+    /* ── Resizer ─────────────────────────────────── */
+    .resizer {
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 4px;
+      cursor: ew-resize;
+      z-index: 10;
+    }
+
+    .resizer:hover, .resizer.active { background: rgba(255,255,255,0.08); }
+
+    /* ── Private chat overlay ────────────────────── */
+    #privateChat {
+      display: none;
+      position: fixed;
+      right: 320px;
+      top: 52px;
+      bottom: 0;
+      width: 260px;
+      background: var(--surface-2);
+      border-left: 1px solid var(--border);
+      border-right: 1px solid var(--border);
+      color: var(--text);
+      padding: 1rem;
+      flex-direction: column;
+      z-index: 100;
+    }
+
+    #privateChat.open { display: flex; }
+
+    .private-chat-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.75rem;
+      flex-shrink: 0;
+    }
+
+    #chatWith {
+      margin: 0;
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    #privateMessages {
+      flex: 1;
+      overflow-y: auto;
+      margin-bottom: 0.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .private-msg {
+      font-size: 0.8rem;
+      line-height: 1.5;
+      color: var(--text);
+    }
+
+    #privateInput {
+      width: 100%;
+      padding: 0.4375rem 0.625rem;
+      background: var(--surface-3);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.8125rem;
+      outline: none;
+      flex-shrink: 0;
+    }
+
+    #privateInput:focus { border-color: rgba(255,255,255,0.14); }
+    #privateInput::placeholder { color: var(--text-muted); }
+
+    /* ── Light mode ──────────────────────────────── */
+    body.light {
+      --bg:           #f4f4f5;
+      --surface:      #ffffff;
+      --surface-2:    #fafafa;
+      --surface-3:    #f1f1f3;
+      --border:       rgba(0,0,0,0.08);
+      --border-soft:  rgba(0,0,0,0.04);
+      --text:         #18181b;
+      --text-muted:   #71717a;
+      --text-dim:     #d4d4d8;
+    }
+
+    /* ── Mobile ──────────────────────────────────── */
+    #toggleChat { display: none; }
 
     @media (max-width: 768px) {
       body {
         grid-template-columns: 1fr;
-        grid-template-rows: auto auto 1fr auto;
+        grid-template-rows: 52px 1fr;
       }
 
-      .main-content,
-      .chat-container {
-        grid-column: 1;
-      }
-    }
-
-    /* Wrapper for stream and info */
-    .main-content {
-      display: flex;
-      flex-direction: column;
-      grid-column: 1;
-      overflow: hidden;
-    }
-
-    /* Light mode overrides */
-    body.light {
-      background-color: #fff;
-      color: #000;
-    }
-
-    body.light header {
-      background: #eee;
-      border-bottom: 1px solid #ccc;
-    }
-
-    body.light .chat-container {
-      background: #f5f5f5;
-      border-left: 1px solid #ccc;
-    }
-
-    body.light #messages div {
-      background: #e0e0e0;
-    }
-
-    body.light form {
-      background: #eee;
-    }
-
-    body.light input {
-      background: #fff;
-      color: #000;
-    }
-
-    body.light button {
-      background: #0a84ff;
-      color: white;
-    }
-
-    body.light #switchBtn {
-      background: #007bff;
-      color: white;
-    }
-
-    /*Twitch Auth Styling*/
-    #loginBtn {
-      background: #6441a5;
-      color: white;
-      border-radius: 4px;
-      padding: 0.4rem 0.6rem;
-      display: flex;
-      align-items: center;
-      gap: 0.4rem;
-      cursor: pointer;
-      border: none;
-    }
-
-    /*Mobile Accessibility Styling*/
-    @media (max-width: 768px) {
-      #toggleChat {
-        display: block;
-        padding: 0.6rem 1rem;
-        background: #0a84ff;
-        color: white;
-        border: none;
-        border-radius: 4px;
-        font-size: 1rem;
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-      }
-
-      .chat-container {
-        transition: transform 0.3s ease;
-      }
-
-      .chat-hidden .chat-container {
+      .chat-panel {
+        position: fixed;
+        bottom: 0; left: 0; right: 0;
+        height: 50vh;
+        border-left: none;
+        border-top: 1px solid var(--border);
         transform: translateY(100%);
+        transition: transform 0.25s ease;
+        z-index: 50;
       }
 
-      .chat-visible .chat-container {
-        transform: translateY(0);
-      }
+      body.chat-visible .chat-panel { transform: translateY(0); }
 
       #toggleChat {
-        z-index: 9999;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        position: fixed;
+        bottom: 1rem;
+        right: 1rem;
+        z-index: 60;
+        background: var(--accent);
+        color: #fff;
+        border: none;
+        border-radius: 20px;
+        padding: 0.5rem 0.875rem;
+        font-family: inherit;
+        font-size: 0.8125rem;
+        font-weight: 500;
+        cursor: pointer;
+        box-shadow: 0 4px 14px rgba(0,0,0,0.4);
       }
-    }
-
-    /* Stream Info Stuff */
-    .stream-info {
-      grid-column: 1 / -1;
-      padding: 1rem;
-      background: #181818;
-      border-top: 1px solid #333;
-      border-bottom: 1px solid #333;
-    }
-
-    .stream-info h2 {
-      margin: 0 0 0.5rem 0;
-      font-size: 1.2rem;
-      color: #0a84ff;
-    }
-
-    .stream-info p {
-      margin: 0.25rem 0;
-      font-size: 0.95rem;
-      color: #ccc;
-    }
-
-    body.light .stream-info {
-      background: #f1f1f1;
-      border-color: #ccc;
-    }
-
-    body.light .stream-info h2 {
-      color: #007bff;
-    }
-
-    body.light .stream-info p {
-      color: #333;
-    }
-
-    /* Resizable Chat Styling */
-
-    .resizable-chat {
-      grid-column: 2;
-      display: flex;
-      flex-direction: row;
-      height: 100%;
-      min-width: 200px;
-      max-width: 100%;
-      width: 100%;
-      position: relative;
-    }
-
-    .chat-container {
-      flex-grow: 1;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      background: #1e1e1e;
-      border-left: 1px solid #333;
-    }
-
-    .resizer {
-      width: 5px;
-      cursor: ew-resize;
-      background: #444;
     }
   </style>
 </head>
 
 <body>
   <header>
-    <span>NBA Live Stream + Chat</span>
-    <div class="header-buttons">
-      <button id="switchBtn" title="Switch Stream">Switch Stream🔁</button>
-      <button id="themeToggle" title="Toggle Theme">
-        <i data-lucide="sun" id="themeIcon"></i>
+    <div class="header-brand">
+      <span class="live-dot"></span>
+      NBA Live
+    </div>
+    <div class="header-actions">
+      <button id="switchBtn" class="btn btn-ghost" title="Switch Stream">
+        <i data-lucide="repeat-2" style="width:13px;height:13px;"></i>
+        Switch Stream
       </button>
-      <button id="loginBtn" title="Login with Twitch">
-        <img src="https://static.twitchcdn.net/assets/favicon-32-e29e246c157142c94346.png" alt="Twitch"
-          style="height: 20px; vertical-align: middle;">
+      <button id="themeToggle" class="btn btn-icon" title="Toggle Theme">
+        <i data-lucide="sun" id="themeIcon" style="width:14px;height:14px;"></i>
       </button>
-
-      <div id="private-chat" style="display:none; border-left: 1px solid #ccc; padding: 10px; width: 250px;">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-          <h3 id="private-chat-header" style="margin: 0;">💬 Whisper</h3>
-          <button id="close-private-chat"
-            style="border: none; background: none; font-size: 1.2em; cursor: pointer;">❌</button>
-        </div>
-        <div id="private-messages" style="max-height: 200px; overflow-y: auto; margin-top: 8px;"></div>
-        <input id="private-input" type="text" placeholder="Type a private message..."
-          style="width: 100%; margin-top: 6px;" />
-      </div>
+      <button id="loginBtn" class="btn btn-twitch" title="Login with Twitch">
+        <img src="https://static.twitchcdn.net/assets/favicon-32-e29e246c157142c94346.png"
+          alt="" style="height:13px; vertical-align:middle;">
+        Login with Twitch
+      </button>
     </div>
   </header>
 
-
   <div class="main-content">
-    <!-- Stream Iframes -->
     <div class="stream-container">
-      <iframe id="stream1" class="active" src="https://pooembed.eu/embed/nba/2026-05-06/min-sa"
+      <iframe id="stream1" class="active"
+        src="https://pooembed.eu/embed/nba/2026-05-06/min-sa"
         allowfullscreen allow="encrypted-media; picture-in-picture;"></iframe>
-      <iframe id="stream2" src="https://player.twitch.tv/?channel=dvdtea&parent=dlt87.github.io" allowfullscreen
-        allow="encrypted-media; picture-in-picture;"></iframe>
+      <iframe id="stream2"
+        src="https://player.twitch.tv/?channel=dvdtea&parent=dlt87.github.io"
+        allowfullscreen allow="encrypted-media; picture-in-picture;"></iframe>
     </div>
-
-    <!-- Stream Info -->
     <div class="stream-info">
-      <h2>🏀 NBA Live: Minnesota Timberwolves vs. San Antonio Spurs</h2>
-      <p><strong>Viewers:</strong> <span id="viewerCount">0</span></p>
-      <p><strong>Streaming on:</strong> dvdtea</p>
+      <span class="stream-title">Minnesota Timberwolves vs. San Antonio Spurs</span>
+      <div class="viewer-badge">
+        <span class="viewer-dot"></span>
+        <span id="viewerCount">0</span>&nbsp;watching
+      </div>
     </div>
   </div>
 
-  <!-- Chat! -->
-  <div id="privateChat"
-    style="display:none; position:fixed; right:0; top:0; height:100%; width:300px; background:#222; border-left:1px solid #444; color:white; padding:1rem; overflow-y:auto;">
-    <h3 id="chatWith"></h3>
-    <div id="privateMessages" style="height:70%; overflow-y:auto; margin-bottom:1rem;"></div>
-    <input id="privateInput" placeholder="Type a private message..." style="width:100%; padding:0.5rem;" />
+  <div id="privateChat">
+    <div class="private-chat-header">
+      <h3 id="chatWith"></h3>
+      <button class="btn btn-ghost" style="padding:0.25rem 0.5rem;font-size:0.75rem;"
+        onclick="document.getElementById('privateChat').classList.remove('open')">Close</button>
+    </div>
+    <div id="privateMessages"></div>
+    <input id="privateInput" placeholder="Message…" />
   </div>
 
-  <div class="resizable-chat">
-    <div class="chat-container">
-      <div id="messages"></div>
-      <form id="form">
-        <input id="input" autocomplete="off" placeholder="Type a message..." />
-        <button type="submit">Send</button>
+  <div class="chat-panel">
+    <div class="resizer"></div>
+    <div class="chat-header">
+      <span class="chat-header-label">Live Chat</span>
+    </div>
+    <div id="messages"></div>
+    <div class="chat-input-wrap">
+      <form id="form" style="display:contents;">
+        <input id="input" autocomplete="off" placeholder="Send a message…" />
+        <button id="sendBtn" type="submit">Send</button>
       </form>
     </div>
-    <div class="resizer"></div>
   </div>
 
-  <!-- Mobile Chat Toggle -->
-  <button id="toggleChat" style="position: fixed; bottom: 1rem; right: 1rem; z-index: 1000; display: none;">Show
-    Chat</button>
+  <button id="toggleChat">
+    <i data-lucide="message-circle" style="width:15px;height:15px;"></i>
+    <span>Chat</span>
+  </button>
 
   <script>
     let currentUser = null;
 
-    document.getElementById("close-private-chat").addEventListener("click", () => {
-      document.getElementById("private-chat").style.display = "none";
-      activeWhisperTarget = null;
-    });
-
     document.addEventListener("DOMContentLoaded", () => {
       lucide.createIcons();
 
+      // Theme
       const themeToggle = document.getElementById("themeToggle");
       const themeIcon = document.getElementById("themeIcon");
-      const currentTheme = localStorage.getItem("theme") || "dark";
+      const savedTheme = localStorage.getItem("theme") || "dark";
 
-      function setThemeIcon(theme) {
+      function applyTheme(theme) {
+        document.body.classList.toggle("light", theme === "light");
         themeIcon.setAttribute("data-lucide", theme === "light" ? "moon" : "sun");
         lucide.createIcons();
       }
 
-      document.body.classList.toggle("light", currentTheme === "light");
-      setThemeIcon(currentTheme);
+      applyTheme(savedTheme);
 
       themeToggle.addEventListener("click", () => {
-        document.body.classList.toggle("light");
-        const newTheme = document.body.classList.contains("light") ? "light" : "dark";
-        localStorage.setItem("theme", newTheme);
-        setThemeIcon(newTheme);
+        const next = document.body.classList.contains("light") ? "dark" : "light";
+        localStorage.setItem("theme", next);
+        applyTheme(next);
       });
 
+      // Socket
       let username = "";
-
-      const socket = io("https://nbachat.onrender.com", {
-        withCredentials: true
-      });
-
-      console.log("🔌 Socket initialized, waiting for connection...");
+      const socket = io("https://nbachat.onrender.com", { withCredentials: true });
 
       const form = document.getElementById("form");
       const input = document.getElementById("input");
       const messages = document.getElementById("messages");
 
       function formatTime() {
-        const now = new Date();
-        return now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
       }
 
       function stringToColor(str) {
-        const colors = [
-          "#ff6b6b", "#feca57", "#54a0ff", "#5f27cd", "#1dd1a1", "#ff9ff3",
-          "#00d2d3", "#c56cf0", "#48dbfb", "#f368e0", "#10ac84", "#ffb142",
-          "#ff793f", "#00cec9", "#6c5ce7", "#fd79a8"
+        const palette = [
+          "#f87171","#fb923c","#fbbf24","#a3e635","#34d399",
+          "#22d3ee","#60a5fa","#a78bfa","#f472b6","#e879f9"
         ];
         let hash = 0;
-        for (let i = 0; i < str.length; i++) {
-          hash = str.charCodeAt(i) + ((hash << 5) - hash);
-        }
-        return colors[Math.abs(hash) % colors.length];
+        for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
+        return palette[Math.abs(hash) % palette.length];
       }
 
       function addMessage(msg) {
+        const isSystem = msg.user === "System";
         const item = document.createElement("div");
-        const color = stringToColor(msg.user || "anonymous");
+        item.className = "message" + (isSystem ? " system" : "");
+
         const time = msg.time || formatTime();
+        const color = isSystem ? null : stringToColor(msg.user || "anon");
 
-        const avatar = msg.avatar
-          ? `<img src="${msg.avatar}" alt="avatar" style="width: 24px; height: 24px; border-radius: 50%; vertical-align: middle; margin-right: 8px;">`
-          : "";
+        const timeEl = document.createElement("span");
+        timeEl.className = "msg-time";
+        timeEl.textContent = time;
+        item.appendChild(timeEl);
 
-        const usernameEl = document.createElement("strong");
-        usernameEl.textContent = `${msg.user}:`;
-        usernameEl.style.color = color;
-        usernameEl.style.cursor = "pointer";
-        usernameEl.style.marginRight = "5px";
-
-        if (currentUser && msg.user !== currentUser.display_name) {
-          usernameEl.onclick = () => openPrivateChat(msg.user);
+        if (msg.avatar && !isSystem) {
+          const av = document.createElement("img");
+          av.src = msg.avatar;
+          av.className = "msg-avatar";
+          av.alt = "";
+          item.appendChild(av);
         }
 
-        item.innerHTML = `
-    <span style="color: gray; font-size: 0.8em;">[${time}]</span>
-    ${avatar}
-  `;
+        const userEl = document.createElement("span");
+        userEl.className = "msg-user";
+        userEl.textContent = (msg.user || "anon") + ":";
+        if (color) userEl.style.color = color;
+        if (!isSystem && currentUser && msg.user !== currentUser.display_name) {
+          userEl.onclick = () => openPrivateChat(msg.user);
+        }
+        item.appendChild(userEl);
 
-        item.appendChild(usernameEl);
-
-        const textSpan = document.createElement("span");
-        textSpan.textContent = msg.text;
-        item.appendChild(textSpan);
+        const textEl = document.createElement("span");
+        textEl.className = "msg-text";
+        textEl.textContent = msg.text;
+        item.appendChild(textEl);
 
         messages.appendChild(item);
         messages.scrollTop = messages.scrollHeight;
@@ -476,202 +619,153 @@
 
       form.addEventListener("submit", (e) => {
         e.preventDefault();
-
         const message = input.value.trim();
         if (!message) return;
-
         socket.emit("chat message", {
-          user: username, // ✅ use fallback
-          avatar: currentUser ? currentUser.profile_image_url : "https://ui-avatars.com/api/?name=" + encodeURIComponent(username),
+          user: username,
+          avatar: currentUser
+            ? currentUser.profile_image_url
+            : "https://ui-avatars.com/api/?name=" + encodeURIComponent(username),
           text: message
         });
-
         input.value = "";
       });
 
-      // Private chatting functionality
-
+      // Private chat
       let chattingWith = "";
 
-      function openPrivateChat(username) {
-        chattingWith = username;
-        document.getElementById("chatWith").textContent = `Chatting with ${username}`;
-        document.getElementById("privateChat").style.display = "block";
+      function openPrivateChat(user) {
+        chattingWith = user;
+        document.getElementById("chatWith").textContent = `@ ${user}`;
         document.getElementById("privateMessages").innerHTML = "";
+        document.getElementById("privateChat").classList.add("open");
       }
 
       document.getElementById("privateInput").addEventListener("keydown", (e) => {
-        if (e.key === "Enter") {
-          const message = e.target.value.trim();
-          if (!message || !chattingWith) return;
-
-          socket.emit("private message", {
-            to: chattingWith,
-            from: currentUser.display_name,
-            message
-          });
-
-          const item = document.createElement("div");
-          item.innerHTML = `<strong style="color:lime;">Me:</strong> ${message}`;
-          document.getElementById("privateMessages").appendChild(item);
-          e.target.value = "";
-        }
+        if (e.key !== "Enter") return;
+        const message = e.target.value.trim();
+        if (!message || !chattingWith || !currentUser) return;
+        socket.emit("private message", { to: chattingWith, from: currentUser.display_name, message });
+        const item = document.createElement("div");
+        item.className = "private-msg";
+        item.innerHTML = `<span style="color:#34d399;font-weight:600;">Me:</span> ${message}`;
+        document.getElementById("privateMessages").appendChild(item);
+        e.target.value = "";
       });
 
       socket.on("private message", ({ from, message }) => {
         openPrivateChat(from);
         const item = document.createElement("div");
-        item.innerHTML = `<strong style="color:orange;">${from}:</strong> ${message}`;
+        item.className = "private-msg";
+        item.innerHTML = `<span style="color:#f472b6;font-weight:600;">${from}:</span> ${message}`;
         document.getElementById("privateMessages").appendChild(item);
       });
 
-      // Chat history and view count stuff
+      socket.on("chat history", (history) => history.forEach(addMessage));
+      socket.on("chat message", addMessage);
 
-      socket.on("chat history", (history) => {
-        history.forEach(addMessage);
-      });
-
-      socket.on("chat message", (msg) => {
-        addMessage(msg);
-      });
-
-      socket.on('viewerCount', (count) => {
-        const viewerCountEl = document.getElementById('viewerCount');
-        if (viewerCountEl) {
-          viewerCountEl.textContent = count;
-        }
+      socket.on("viewerCount", (count) => {
+        const el = document.getElementById("viewerCount");
+        if (el) el.textContent = count;
       });
 
       const loginBtn = document.getElementById("loginBtn");
 
-      // ✅ Check login AFTER socket is defined
       socket.on("connect", () => {
-        console.log("✅ Connected to socket, now checking login...");
-
-        fetch("https://nbachat.onrender.com/auth/user", {
-          credentials: "include"
-        })
-          .then(res => res.json())
+        fetch("https://nbachat.onrender.com/auth/user", { credentials: "include" })
+          .then(r => r.json())
           .then(data => {
             if (data.user) {
               currentUser = data.user;
               username = data.user.display_name;
-
-              socket.emit("chat message", {
-                user: "System",
-                text: `${username} has joined the chat`,
-                time: formatTime()
-              });
-
+              socket.emit("chat message", { user: "System", text: `${username} has joined the chat`, time: formatTime() });
               socket.emit("user joined", username);
 
-              // Show avatar + logout button
               loginBtn.innerHTML = "";
-              const avatar = document.createElement("img");
-              avatar.src = data.user.profile_image_url;
-              avatar.alt = "Twitch avatar";
-              avatar.style.height = "32px";
-              avatar.style.borderRadius = "50%";
-              avatar.style.verticalAlign = "middle";
-              avatar.style.marginRight = "8px";
-
-              const nameSpan = document.createElement("span");
-              nameSpan.textContent = `Logout (${username})`;
-
-              loginBtn.appendChild(avatar);
-              loginBtn.appendChild(nameSpan);
-
-              loginBtn.onclick = () => {
-                window.location.href = "https://nbachat.onrender.com/auth/logout";
-              };
-
+              const av = document.createElement("img");
+              av.src = data.user.profile_image_url;
+              av.alt = "";
+              av.style.cssText = "height:18px;width:18px;border-radius:50%;object-fit:cover;";
+              const label = document.createElement("span");
+              label.textContent = "Logout";
+              loginBtn.appendChild(av);
+              loginBtn.appendChild(label);
+              loginBtn.onclick = () => { window.location.href = "https://nbachat.onrender.com/auth/logout"; };
             } else {
-              // 👤 Generate guest username
               username = "User" + Math.floor(1000 + Math.random() * 9000);
-
-              socket.emit("chat message", {
-                user: "System",
-                text: `${username} has joined the chat`,
-                time: formatTime()
-              });
-
+              socket.emit("chat message", { user: "System", text: `${username} has joined the chat`, time: formatTime() });
               socket.emit("user joined", username);
-
-              loginBtn.textContent = "Login with Twitch";
-              loginBtn.onclick = () => {
-                window.location.href = "https://nbachat.onrender.com/auth/twitch";
-              };
+              loginBtn.innerHTML = `<img src="https://static.twitchcdn.net/assets/favicon-32-e29e246c157142c94346.png" alt="" style="height:13px;vertical-align:middle;"> Login with Twitch`;
+              loginBtn.onclick = () => { window.location.href = "https://nbachat.onrender.com/auth/twitch"; };
             }
           })
-          .catch(err => console.error("Login check failed:", err));
+          .catch(err => console.error("Auth check failed:", err));
       });
 
-      socket.on("connect_error", (err) => {
-        console.error("❌ Socket connection failed:", err.message);
-      });
+      socket.on("connect_error", (err) => console.error("Socket error:", err.message));
 
-      // Stream toggle (optional)
-      const btn = document.getElementById("switchBtn");
+      // Stream switch
       const stream1 = document.getElementById("stream1");
       const stream2 = document.getElementById("stream2");
-
-      btn.addEventListener("click", () => {
+      document.getElementById("switchBtn").addEventListener("click", () => {
         stream1.classList.toggle("active");
         stream2.classList.toggle("active");
       });
 
-      // Mobile Chat Toggle
+      // Mobile chat toggle
       const toggleChatBtn = document.getElementById("toggleChat");
-      let chatVisible = true;
+      const toggleLabel = toggleChatBtn.querySelector("span");
+      let chatVisible = false;
 
-      function updateChatToggle() {
+      function updateMobileChat() {
         if (window.innerWidth <= 768) {
-          toggleChatBtn.style.display = "block";
-          document.body.classList.toggle("chat-hidden", !chatVisible);
+          toggleChatBtn.style.display = "inline-flex";
           document.body.classList.toggle("chat-visible", chatVisible);
-          toggleChatBtn.textContent = chatVisible ? "Hide Chat" : "Show Chat";
+          if (toggleLabel) toggleLabel.textContent = chatVisible ? "Hide" : "Chat";
         } else {
-          document.body.classList.remove("chat-hidden", "chat-visible");
           toggleChatBtn.style.display = "none";
+          document.body.classList.remove("chat-visible");
         }
       }
 
       toggleChatBtn.addEventListener("click", () => {
         chatVisible = !chatVisible;
-        updateChatToggle();
+        updateMobileChat();
       });
 
-      window.addEventListener("resize", updateChatToggle);
-
-      // Initial check
-      updateChatToggle();
+      window.addEventListener("resize", updateMobileChat);
+      updateMobileChat();
     });
 
-    // Resizable chat functionality
-    const resizer = document.querySelector('.resizer');
-    const resizableChat = document.querySelector('.resizable-chat');
-
+    // Resizable chat
+    const resizer = document.querySelector(".resizer");
+    const chatPanel = document.querySelector(".chat-panel");
     let isResizing = false;
 
-    resizer.addEventListener('mousedown', (e) => {
+    resizer.addEventListener("mousedown", () => {
       isResizing = true;
-      document.body.style.cursor = 'ew-resize';
+      resizer.classList.add("active");
+      document.body.style.cursor = "ew-resize";
+      document.body.style.userSelect = "none";
     });
 
-    document.addEventListener('mousemove', (e) => {
+    document.addEventListener("mousemove", (e) => {
       if (!isResizing) return;
-
-      const newWidth = window.innerWidth - e.clientX;
-      resizableChat.style.width = `${newWidth}px`;
+      const newW = window.innerWidth - e.clientX;
+      if (newW >= 200 && newW <= window.innerWidth * 0.55) {
+        chatPanel.style.width = newW + "px";
+        document.body.style.gridTemplateColumns = `1fr ${newW}px`;
+      }
     });
 
-    document.addEventListener('mouseup', () => {
+    document.addEventListener("mouseup", () => {
+      if (!isResizing) return;
       isResizing = false;
-      document.body.style.cursor = '';
+      resizer.classList.remove("active");
+      document.body.style.cursor = "";
+      document.body.style.userSelect = "";
     });
   </script>
 
-
 </body>
-
 </html>
