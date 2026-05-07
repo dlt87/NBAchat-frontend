@@ -222,6 +222,81 @@
       color: var(--text-muted);
     }
 
+    /* ── Name editor ─────────────────────────────── */
+    .name-display {
+      display: flex;
+      align-items: center;
+      gap: 0.2rem;
+      margin-left: auto;
+    }
+
+    #nameText {
+      font-size: 0.6875rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      max-width: 100px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .name-edit-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: none;
+      border: none;
+      color: var(--text-dim);
+      cursor: pointer;
+      padding: 2px;
+      border-radius: 3px;
+      line-height: 1;
+      transition: color 0.15s;
+    }
+
+    .name-edit-btn:hover { color: var(--text-muted); }
+
+    .name-form {
+      display: none;
+      align-items: center;
+      gap: 0.25rem;
+      margin-left: auto;
+    }
+
+    .name-form.active { display: flex; }
+
+    .name-input {
+      background: var(--surface-3);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 0.2rem 0.5rem;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.75rem;
+      outline: none;
+      width: 100px;
+      transition: border-color 0.15s;
+    }
+
+    .name-input:focus { border-color: rgba(255,255,255,0.14); }
+    body.light .name-input:focus { border-color: rgba(0,0,0,0.2); }
+
+    .name-save-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--accent);
+      border: none;
+      color: #fff;
+      cursor: pointer;
+      padding: 3px 6px;
+      border-radius: 4px;
+      line-height: 1;
+      transition: background 0.15s;
+    }
+
+    .name-save-btn:hover { background: var(--accent-hover); }
+
     #messages {
       flex: 1;
       min-height: 0;
@@ -516,6 +591,18 @@
     <div class="resizer"></div>
     <div class="chat-header">
       <span class="chat-header-label">Live Chat</span>
+      <div id="nameDisplay" class="name-display">
+        <span id="nameText"></span>
+        <button id="nameEditBtn" class="name-edit-btn" title="Change name">
+          <i data-lucide="pencil" style="width:11px;height:11px;"></i>
+        </button>
+      </div>
+      <form id="nameForm" class="name-form">
+        <input id="nameInput" class="name-input" maxlength="24" autocomplete="off" placeholder="Your name…" />
+        <button type="submit" class="name-save-btn" title="Save">
+          <i data-lucide="check" style="width:11px;height:11px;"></i>
+        </button>
+      </form>
     </div>
     <div id="messages"></div>
     <div class="chat-input-wrap">
@@ -567,6 +654,49 @@
       function formatTime() {
         return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
       }
+
+      const nameDisplay = document.getElementById("nameDisplay");
+      const nameText    = document.getElementById("nameText");
+      const nameEditBtn = document.getElementById("nameEditBtn");
+      const nameForm    = document.getElementById("nameForm");
+      const nameInput   = document.getElementById("nameInput");
+
+      function updateNameDisplay(name) {
+        nameText.textContent = name;
+        lucide.createIcons();
+      }
+
+      nameEditBtn.addEventListener("click", () => {
+        nameDisplay.style.display = "none";
+        nameForm.classList.add("active");
+        nameInput.value = username;
+        nameInput.focus();
+        nameInput.select();
+      });
+
+      function commitNameChange() {
+        const newName = nameInput.value.trim();
+        nameForm.classList.remove("active");
+        nameDisplay.style.display = "flex";
+        if (!newName || newName === username) return;
+        const oldName = username;
+        username = newName;
+        localStorage.setItem("chatUsername", newName);
+        updateNameDisplay(newName);
+        socket.emit("chat message", {
+          user: "System",
+          text: `${oldName} changed their name to ${newName}`,
+          time: formatTime()
+        });
+      }
+
+      nameForm.addEventListener("submit", (e) => { e.preventDefault(); commitNameChange(); });
+      nameInput.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") {
+          nameForm.classList.remove("active");
+          nameDisplay.style.display = "flex";
+        }
+      });
 
       function stringToColor(str) {
         const palette = [
@@ -681,6 +811,9 @@
               socket.emit("chat message", { user: "System", text: `${username} has joined the chat`, time: formatTime() });
               socket.emit("user joined", username);
 
+              // Twitch users: hide name editor (name is their Twitch display name)
+              nameDisplay.style.display = "none";
+
               loginBtn.innerHTML = "";
               const av = document.createElement("img");
               av.src = data.user.profile_image_url;
@@ -692,9 +825,13 @@
               loginBtn.appendChild(label);
               loginBtn.onclick = () => { window.location.href = "https://nbachat.onrender.com/auth/logout"; };
             } else {
-              username = "User" + Math.floor(1000 + Math.random() * 9000);
+              // Guest: restore saved name or generate a new one
+              const saved = localStorage.getItem("chatUsername");
+              username = saved || "User" + Math.floor(1000 + Math.random() * 9000);
+              if (!saved) localStorage.setItem("chatUsername", username);
               socket.emit("chat message", { user: "System", text: `${username} has joined the chat`, time: formatTime() });
               socket.emit("user joined", username);
+              updateNameDisplay(username);
               loginBtn.innerHTML = `<img src="https://static.twitchcdn.net/assets/favicon-32-e29e246c157142c94346.png" alt="" style="height:13px;vertical-align:middle;"> Login with Twitch`;
               loginBtn.onclick = () => { window.location.href = "https://nbachat.onrender.com/auth/twitch"; };
             }
