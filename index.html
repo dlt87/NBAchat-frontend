@@ -971,19 +971,29 @@
           const basketball = (data.streams || []).find(c => c.category === "Basketball");
           if (!basketball?.streams?.length) return;
 
-          // Live games: started, not ended, has iframe embed
-          const live = basketball.streams.filter(s =>
-            s.iframe && (s.always_live === 1 || (s.starts_at <= now && s.ends_at >= now))
-          );
+          // Live: started, and either no end time (0) or ended within the last hour (OT/delay grace)
+          const live = basketball.streams.filter(s => {
+            if (s.always_live === 1) return true;
+            const started = s.starts_at > 0 && s.starts_at <= now;
+            const notEnded = !s.ends_at || s.ends_at >= now - 3600;
+            return started && notEnded;
+          });
           if (!live.length) return;
 
           // Pick the most recently started game
           const game = live.sort((a, b) => b.starts_at - a.starts_at)[0];
 
-          const srcMatch = game.iframe.match(/src=["']([^"']+)["']/i);
-          if (!srcMatch) return;
+          // Use iframe src if provided, otherwise build from uri_name or id
+          let src = null;
+          if (game.iframe) {
+            const m = game.iframe.match(/src=["']([^"']+)["']/i);
+            if (m) src = m[1];
+          }
+          if (!src && game.uri_name) src = `https://ppv.to/streams/${game.uri_name}`;
+          if (!src && game.id)       src = `https://ppv.to/embed/${game.id}`;
+          if (!src) return;
 
-          if (stream1.src !== srcMatch[1]) stream1.src = srcMatch[1];
+          if (stream1.src !== src) stream1.src = src;
 
           const titleEl = document.getElementById("streamTitle");
           if (titleEl && game.name) titleEl.textContent = game.name;
