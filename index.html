@@ -989,8 +989,8 @@
             const m = game.iframe.match(/src=["']([^"']+)["']/i);
             if (m) src = m[1];
           }
-          if (!src && game.uri_name) src = `https://ppv.to/live/${game.uri_name}`;
-          if (!src && game.id)       src = `https://ppv.to/embed/${game.id}`;
+          if (!src && game.uri_name) src = `https://pooembed.eu/embed/${game.uri_name}`;
+          if (!src && game.id)       src = `https://ppv.to/live/${game.id}`;
           if (!src) return;
 
           if (stream1.src !== src) stream1.src = src;
