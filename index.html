@@ -605,14 +605,14 @@
   <div class="main-content">
     <div class="stream-container">
       <iframe id="stream1" class="active"
-        src="https://pooembed.eu/embed/nba/2026-05-06/min-sa"
+        src="about:blank"
         allowfullscreen allow="encrypted-media; picture-in-picture;"></iframe>
       <iframe id="stream2"
         src="https://player.twitch.tv/?channel=dvdtea&parent=dlt87.github.io"
         allowfullscreen allow="encrypted-media; picture-in-picture;"></iframe>
     </div>
     <div class="stream-info">
-      <span class="stream-title">Minnesota Timberwolves vs. San Antonio Spurs</span>
+      <span class="stream-title" id="streamTitle">Loading stream…</span>
       <div id="scoreboard" class="score-display" style="display:none;">
         <span id="scoreAway" class="score-team"></span>
         <span class="score-sep">·</span>
@@ -960,17 +960,52 @@
       window.addEventListener("resize", updateMobileChat);
       updateMobileChat();
 
-      // Live score
+      // Live NBA stream from ppv.to
+      async function loadNBAStream() {
+        try {
+          const res = await fetch("https://api.ppv.to/api/streams");
+          const data = await res.json();
+          if (!data.success) return;
+
+          const now = Math.floor(Date.now() / 1000);
+          const basketball = (data.streams || []).find(c => c.category === "Basketball");
+          if (!basketball?.streams?.length) return;
+
+          // Live games: started, not ended, has iframe embed
+          const live = basketball.streams.filter(s =>
+            s.iframe && (s.always_live === 1 || (s.starts_at <= now && s.ends_at >= now))
+          );
+          if (!live.length) return;
+
+          // Pick the most recently started game
+          const game = live.sort((a, b) => b.starts_at - a.starts_at)[0];
+
+          const srcMatch = game.iframe.match(/src=["']([^"']+)["']/i);
+          if (!srcMatch) return;
+
+          if (stream1.src !== srcMatch[1]) stream1.src = srcMatch[1];
+
+          const titleEl = document.getElementById("streamTitle");
+          if (titleEl && game.name) titleEl.textContent = game.name;
+        } catch (e) {
+          console.error("Stream load failed:", e);
+        }
+      }
+
+      loadNBAStream();
+      setInterval(loadNBAStream, 60000);
+
+      // Live score (any in-progress NBA game)
       async function fetchScore() {
         try {
           const res = await fetch(
             "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard"
           );
           const data = await res.json();
-          const game = (data.events || []).find(e => {
-            const abbrs = (e.competitions?.[0]?.competitors || []).map(c => c.team.abbreviation);
-            return abbrs.includes("MIN") && (abbrs.includes("SA") || abbrs.includes("SAS"));
-          });
+          // Prefer in-progress game, fall back to first listed
+          const game = (data.events || []).find(e =>
+            e.competitions?.[0]?.status?.type?.state === "in"
+          ) || (data.events || [])[0];
           if (!game) return;
 
           const comp = game.competitions[0];
